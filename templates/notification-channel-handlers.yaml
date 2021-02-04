@@ -28,7 +28,7 @@ Parameters:
     Type: String
   DiscordToken:
     Description: "Discord Token required to send notifications to discord channel"
-    Default: "ls5zo_zzqxZ9a4mweU3Ts4quJ_qbuuB5HqCSeAG0GIKqbb8o3ZMyY6IpMpaFTkpKs6rR"
+    Default: ":)"
     Type: String
 
   # -- twilio--
@@ -42,11 +42,11 @@ Parameters:
     Type: String
   TwilioAccountSID:
     Description: "Twilio account id to authenticate"
-    Default: "AC03639202c82fb81062c40d81f005c0a9"
+    Default: ":)"
     Type: String
   TwilioAuthToken:
     Description: "Twilio token required to send notifications with twilio"
-    Default: "8cfdc51fd96b56e46d0b95341e645600"
+    Default: ":)"
     Type: String
   # -- Slack --
   SlackSQSArn:
