@@ -1,6 +1,5 @@
 # This repo contains our solution to the AWS challenge of Hack The Future 2020
-
-Following is the challenge assignment
+Check out [my blogpost](https://blog.candaele.dev/hackthefuture/) about this event for more info
 
 
 # htf-alerting-service
