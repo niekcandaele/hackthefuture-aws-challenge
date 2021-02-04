@@ -1,0 +1,172 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  SAM Template for HTF AWS Troll Alerting Service - channel handlers
+
+Parameters:
+  # -- Teams --
+  MSTeamsSQSLambdaArn:
+    Description: "MSTeams SQS lambda arn"
+    Default: "arn:aws:lambda:eu-central-1:128894441789:function:vaticaan-htf-trollalerting-FnChannelHandlerMSTeams-NNBE42BT49JX"
+    Type: String
+  MSTeamsSQSArn:
+    Description: "SQS ARN Teams queue"
+    Default: "arn:aws:sqs:eu-central-1:128894441789:htf-vaticaan-sqs-msteams"
+    Type: String
+
+  # -- Discord --
+  DiscordSQSArn:
+    Description: "SQS ARN Discord queue"
+    Default: "arn:aws:sqs:eu-central-1:128894441789:htf-vaticaan-sqs-discord"
+    Type: String
+  DiscordSQSLambdaArn:
+    Default: "arn:aws:lambda:eu-central-1:128894441789:function:vaticaan-htf-trollalerting-FnChannelHandlerDiscord-HJ4IZ6J2C3OY"
+    Type: String
+  DiscordID:
+    Description: "Discord channelID"
+    Default: "770397638352437299"
+    Type: String
+  DiscordToken:
+    Description: "Discord Token required to send notifications to discord channel"
+    Default: "ls5zo_zzqxZ9a4mweU3Ts4quJ_qbuuB5HqCSeAG0GIKqbb8o3ZMyY6IpMpaFTkpKs6rR"
+    Type: String
+
+  # -- twilio--
+  TwilioSQSArn:
+    Description: "SQS ARN Twilio queue"
+    Default: "arn:aws:sqs:eu-central-1:128894441789:htf-vaticaan-sqs-twilio"
+    Type: String
+  TwilioSQSLambdaArn:
+    Description: "Twilio SQS ARN"
+    Default: "arn:aws:lambda:eu-central-1:128894441789:function:vaticaan-htf-trollalerting-FnChannelHandlerTwilio-A4NW0A1LMH76"
+    Type: String
+  TwilioAccountSID:
+    Description: "Twilio account id to authenticate"
+    Default: "AC03639202c82fb81062c40d81f005c0a9"
+    Type: String
+  TwilioAuthToken:
+    Description: "Twilio token required to send notifications with twilio"
+    Default: "8cfdc51fd96b56e46d0b95341e645600"
+    Type: String
+  # -- Slack --
+  SlackSQSArn:
+    Description: "SQS ARN Slack queue"
+    Default: "arn:aws:sqs:eu-central-1:128894441789:htf-vaticaan-sqs-slack"
+    Type: String
+  SlackUrl:
+    Description: "Slack webhook SlackUrl"
+    Default: "https://hooks.slack.com/services/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"
+    Type: String
+  SlackSQSLambdaArn:
+    Description: "Slack SQS Arn"
+    Default: "arn:aws:lambda:eu-central-1:128894441789:function:vaticaan-htf-trollalerting-c-FnChannelHandlerSlack-ETBCI1YBDV83"
+    Type: String
+
+Resources:
+  # -----------------------------
+  # Functions
+  # -----------------------------
+  FnChannelHandlerDiscord:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: ../src/fn-channelHandlerDiscord/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Timeout: 10
+      Environment:
+        Variables:
+          DiscordSQSLambdaArn: !Sub ${DiscordSQSLambdaArn}
+          DiscordID: !Sub ${DiscordID}
+          DiscordToken: !Sub ${DiscordToken}
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !Sub ${DiscordSQSArn}
+            BatchSize: 1
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "ray:PutTraceSegments"
+                - "xray:PutTelemetryRecords"
+              Resource:
+                - "*"
+
+  FnChannelHandlerMSTeams:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: ../src/fn-channelHandlerMSTeams/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Timeout: 10
+      Environment:
+        Variables:
+          MSTeamsSQSLambdaArn: !Sub ${MSTeamsSQSLambdaArn}
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !Sub ${MSTeamsSQSArn}
+            BatchSize: 1
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "ray:PutTraceSegments"
+                - "xray:PutTelemetryRecords"
+              Resource:
+                - "*"
+
+  FnChannelHandlerTwilio:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: ../src/fn-channelHandlerTwilio/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Timeout: 10
+      Environment:
+        Variables:
+          TwilioSQSLambdaArn: !Sub ${TwilioSQSLambdaArn}
+          TwilioAccountSID: !Sub ${TwilioAccountSID}
+          TwilioAuthToken: !Sub ${TwilioAuthToken}
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !Sub ${TwilioSQSArn}
+            BatchSize: 1
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "ray:PutTraceSegments"
+                - "xray:PutTelemetryRecords"
+              Resource:
+                - "*"
+
+  FnChannelHandlerSlack:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: ../src/fn-channelHandlerSlack/
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Timeout: 10
+      Environment:
+        Variables:
+          SlackSQSLambdaArn: !Sub ${SlackSQSLambdaArn}
+          SlackUrl: !Sub ${SlackUrl}
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !Sub ${SlackSQSArn}
+            BatchSize: 1
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - "ray:PutTraceSegments"
+                - "xray:PutTelemetryRecords"
+              Resource:
+                - "*"

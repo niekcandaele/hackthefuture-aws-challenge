@@ -1,0 +1,82 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+# docs.serverless.com
+#
+# Happy Coding!
+
+service:
+name: hack-the-future
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+plugins:
+- serverless-offline
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: "2"
+
+provider:
+name: aws
+runtime: nodejs12.x
+environment:
+DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+
+functions:
+notifier-discord:
+description: discord notifications
+handler: "functions/notifiers/discord/index.handler"
+events:
+- http:
+path: notify/discord
+method: get
+
+resources:
+Resources:
+SubscriberDynamoDbTable:
+Type: "AWS::DynamoDB::Table"
+DeletionPolicy: Retain
+Properties:
+AttributeDefinitions:
+- AttributeName: serviceId
+AttributeType: S
+- AttributeName: id
+AttributeType: S
+KeySchema:
+- AttributeName: serviceId
+KeyType: HASH # keytype = the role that the key attribute will assume --> HASH - partition key | RANGE - sort key
+- AttributeName: id
+KeyType: RANGE
+ProvisionedThroughput:
+ReadCapacityUnits: 1
+WriteCapacityUnits: 1
+TableName: ${self:provider.environment.DYNAMODB_TABLE}
+
+ PonyDynamoDbTable:
+Type: "AWS::DynamoDB::Table"
+DeletionPolicy: Retain
+Properties:
+AttributeDefinitions:
+- AttributeName: alertId
+AttributeType: S
+- AttributeName: location
+AttributeType: S
+- AttributeName: enemyType # random attribute
+AttributeType: S
+KeySchema:
+#- AttributeName: location (sort key, not applicable since, we will not query the data, just handle the stream events (crud)
+# KeyType: HASH
+- AttributeName: alertId
+KeyType: RANGE
+ProvisionedThroughput:
+ReadCapacityUnits: 1
+WriteCapacityUnits: 1
+TableName: ${self:provider.environment.DYNAMODB_TABLE}
